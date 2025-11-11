@@ -1,4 +1,4 @@
-package org.example;
+package apigateway;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.actuate.web.exchanges.HttpExchangeRepository;
