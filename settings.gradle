@@ -1,0 +1,16 @@
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.8.0'
+}
+
+rootProject.name = 'Green-Basket'
+
+// 서비스 모듈
+include 'user-service'
+include 'apigateway-service'
+include 'service-discovery'
+
+// 공통 모듈
+include 'common:snowflake'
+include 'common:jwt'
+//include 'common:outbox-message-relay'
+//include 'common:event'
