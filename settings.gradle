@@ -12,5 +12,9 @@ include 'service-discovery'
 // 공통 모듈
 include 'common:snowflake'
 include 'common:jwt'
+include 'common:id-generator'
 //include 'common:outbox-message-relay'
 //include 'common:event'
+include 'order-service'
+include 'catalog-service'
+

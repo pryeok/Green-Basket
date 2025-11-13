@@ -31,7 +31,7 @@ public class JwtUtil {
         return Jwts.builder()
                 .setSubject(userId)
                 .claim("role", role)
-                .claim("type", "access")
+                .claim("type", TokenType.ACCESS.getValue())
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
@@ -45,7 +45,7 @@ public class JwtUtil {
 
         return Jwts.builder()
                 .setSubject(userId)
-                .claim("type", "refresh")
+                .claim("type", TokenType.REFRESH.getValue())
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
@@ -65,9 +65,10 @@ public class JwtUtil {
     }
 
     // 토큰 타입 확인 (access or refresh)
-    public String getTokenType(String token) {
+    public TokenType getTokenType(String token) {
         Claims claims = parseClaims(token);
-        return claims.get("type", String.class);
+        String typeValue = claims.get("type", String.class);
+        return TokenType.fromValue(typeValue);
     }
 
     // Claims 파싱
@@ -100,11 +101,11 @@ public class JwtUtil {
 
     // Access Token인지 확인
     public boolean isAccessToken(String token) {
-        return "access".equals(getTokenType(token));
+        return TokenType.ACCESS == getTokenType(token);
     }
 
     // Refresh Token인지 확인
     public boolean isRefreshToken(String token) {
-        return "refresh".equals(getTokenType(token));
+        return TokenType.REFRESH == getTokenType(token);
     }
 }

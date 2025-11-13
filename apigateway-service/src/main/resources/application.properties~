@@ -53,7 +53,7 @@ spring.cloud.gateway.routes[3].filters[0]=RemoveRequestHeader=Cookie
 spring.cloud.gateway.routes[3].filters[1]=RewritePath=/catalog-service/(?<segment>.*), /$\{segment}
 spring.cloud.gateway.routes[3].filters[2]=JwtAuthentication
 
-# Route 5: Order Service - Protected (생성/수정/삭제/조회 인증 필요)
+# Route 5: Order Service
 spring.cloud.gateway.routes[4].id=order-service
 spring.cloud.gateway.routes[4].uri=lb://ORDER-SERVICE
 spring.cloud.gateway.routes[4].predicates[0]=Path=/order-service/**
