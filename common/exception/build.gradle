@@ -1,0 +1,24 @@
+plugins {
+    id 'java'
+    id 'java-library'
+}
+
+group = 'com.greenbasket.common'
+version = '1.0.0'
+sourceCompatibility = '21'
+targetCompatibility = '21'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Spring Boot & Web
+    compileOnly 'org.springframework.boot:spring-boot-starter:3.5.0'
+    compileOnly 'org.springframework.boot:spring-boot-starter-web:3.5.0'
+    compileOnly 'org.springframework:spring-context:6.2.0'
+
+    // Lombok
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+}

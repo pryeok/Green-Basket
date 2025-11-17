@@ -9,7 +9,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.greenbasket.common.snowflake.Snowflake;
 import static com.greenbasket.common.idgenerator.IdGenerator.generateProductId;
+import catalogservice.exception.InvalidProductIdException;
+import catalogservice.exception.OutOfStockException;
+import catalogservice.exception.ProductNotFoundException;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -48,5 +53,56 @@ public class CatalogServiceImpl implements CatalogService {
         return catalogRepository.findAll().stream()
                 .map(CatalogResponse::from)
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CatalogResponse> getCatalogsByProductIds(List<String> productIds) {
+        if (productIds == null || productIds.isEmpty() ||
+                productIds.stream().anyMatch(id -> id == null || id.isBlank())) {
+            throw new InvalidProductIdException();
+        }
+
+        List<Catalog> catalogs = catalogRepository.findByProductIdIn(productIds);
+
+        if (catalogs.size() != productIds.size()) {
+            Set<String> foundIds = catalogs.stream()
+                    .map(Catalog::getProductId)
+                    .collect(Collectors.toSet());
+
+            List<String> notFoundIds = productIds.stream()
+                    .filter(id -> !foundIds.contains(id))
+                    .toList();
+
+            throw new ProductNotFoundException(notFoundIds);
+        }
+
+        return catalogs.stream()
+                .map(CatalogResponse::from)
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public void decreaseStock(String productId, Integer quantity) {
+        Catalog catalog = catalogRepository.findByProductId(productId)
+                .orElseThrow(() -> new ProductNotFoundException(List.of(productId)));
+
+        if (catalog.getStock() < quantity) {
+            throw new OutOfStockException(
+                    catalog.getProductId(),
+                    quantity,
+                    catalog.getStock());
+        }
+        catalog.decreaseStock(quantity);
+    }
+
+    @Override
+    @Transactional
+    public void increaseStock(String productId, Integer quantity) {
+        Catalog catalog = catalogRepository.findByProductId(productId)
+                .orElseThrow(() -> new ProductNotFoundException(List.of(productId)));
+
+        catalog.increaseStock(quantity);
     }
 }

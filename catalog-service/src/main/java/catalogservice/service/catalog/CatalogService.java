@@ -13,4 +13,12 @@ public interface CatalogService {
 
     List<CatalogResponse> getAllCatalogs();
 
+    List<CatalogResponse> getCatalogsByProductIds(List<String> productIds);
+
+    // 재고 차감
+    void decreaseStock(String productId, Integer quantity);
+
+    // 재고 복구
+    void increaseStock(String productId, Integer quantity);
+
 }

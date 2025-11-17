@@ -1,0 +1,43 @@
+package orderservice.error;
+
+import feign.Response;
+import feign.codec.ErrorDecoder;
+import lombok.RequiredArgsConstructor;
+import org.springframework.core.env.Environment;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+
+@RequiredArgsConstructor
+public class FeignErrorDecoder implements ErrorDecoder {
+    private final Environment env;
+
+    @Override
+    public Exception decode(String methodKey, Response response) {
+        switch(response.status()) {
+            case 400:
+                return new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "잘못된 요청입니다");
+            case 404:
+                if (methodKey.contains("getProducts")) {
+                    return new ResponseStatusException(
+                            HttpStatus.NOT_FOUND,
+                            env.getProperty("order-service.exception.products-not-found",
+                                    "주문 실패: 상품을 찾을 수 없습니다"));
+                }
+                break;
+            case 409:  // CONFLICT - 재고 부족 등
+                return new ResponseStatusException(
+                        HttpStatus.CONFLICT,
+                        env.getProperty("order-service.exception.out-of-stock",
+                                "주문 실패: 재고가 부족합니다"));
+            case 500:
+                return new ResponseStatusException(
+                        HttpStatus.INTERNAL_SERVER_ERROR,
+                        "외부 서비스 오류가 발생했습니다");
+            default:
+                return new Exception(response.reason());
+        }
+        return null;
+    }
+}

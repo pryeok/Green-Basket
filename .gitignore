@@ -20,3 +20,12 @@ Thumbs.db
 
 # Claude
 .claude/settings.local.json
+
+# Security - Keystore & Certificates
+*.jks
+*.keystore
+*.p12
+*.pem
+*.key
+*.crt
+*.cer

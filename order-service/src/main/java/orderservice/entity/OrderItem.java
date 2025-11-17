@@ -47,4 +47,9 @@ public class OrderItem extends BaseEntity {
         orderItem.totalPrice = qty * unitPrice;
         return orderItem;
     }
+
+    @Override
+    public Long getId() {
+        return id;
+    }
 }

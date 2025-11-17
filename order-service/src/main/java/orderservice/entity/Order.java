@@ -44,4 +44,9 @@ public class Order extends BaseEntity {
         this.totalPrice += orderItem.getTotalPrice();
     }
 
+    @Override
+    public Long getId() {
+        return id;
+    }
+
 }

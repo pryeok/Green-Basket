@@ -36,4 +36,23 @@ public class CatalogController {
     public List<CatalogResponse> getAllCatalogs() {
         return catalogService.getAllCatalogs();
     }
+
+    @PostMapping("/catalogs/batch")
+    public List<CatalogResponse> getCatalogsByProductIds(@RequestBody List<String> productIds) {
+        return catalogService.getCatalogsByProductIds(productIds);
+    }
+
+    @PutMapping("/catalogs/{productId}/decrease-stock")
+    public void decreaseStock(
+            @PathVariable("productId") String productId,
+            @RequestParam("quantity") Integer quantity) {
+        catalogService.decreaseStock(productId, quantity);
+    }
+
+    @PutMapping("/catalogs/{productId}/increase-stock")
+    public void increaseStock(
+            @PathVariable("productId") String productId,
+            @RequestParam("quantity") Integer quantity) {
+        catalogService.increaseStock(productId, quantity);
+    }
 }
