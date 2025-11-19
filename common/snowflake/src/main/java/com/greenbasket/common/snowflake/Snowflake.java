@@ -12,8 +12,8 @@ public class Snowflake {
     private static final long maxSequence = (1L << SEQUENCE_BITS) - 1;
 
     private final long nodeId = RandomGenerator.getDefault().nextLong(maxNodeId + 1); // 랜덤 생성된 값 (0~1023) (서버)
-    // UTC = 2024-01-01T00:00:00Z
-    private final long startTimeMillis = 1704067200000L; // 2024-01-01 (시간)
+    // UTC = 2025-11-01T00:00:00Z
+    private final long startTimeMillis = 1761964800000L; // 2025-11-01 (시간)
 
     private long lastTimeMillis = startTimeMillis;
     private long sequence = 0L; // 현재 시퀀스 (0~4095) (순서)

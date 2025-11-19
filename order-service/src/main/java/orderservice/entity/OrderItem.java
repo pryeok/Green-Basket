@@ -34,7 +34,7 @@ public class OrderItem extends BaseEntity {
     private Integer unitPrice;
 
     @Column(nullable = false)
-    private Integer totalPrice;  // qty * unitPrice
+    private Integer totalPrice;
 
     public static OrderItem create(Long id, Order order, String productId, String productName, Integer qty, Integer unitPrice) {
         OrderItem orderItem = new OrderItem();

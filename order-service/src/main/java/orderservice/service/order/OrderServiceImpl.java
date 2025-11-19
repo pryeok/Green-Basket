@@ -4,6 +4,7 @@ import com.greenbasket.common.idgenerator.IdGenerator;
 import com.greenbasket.common.snowflake.Snowflake;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import orderservice.client.CatalogServiceAdapter;
 import orderservice.client.CatalogServiceClient;
 import orderservice.client.response.CatalogResponse;
 import orderservice.dto.OrderDto;
@@ -14,10 +15,8 @@ import orderservice.exception.OrderCreationFailedException;
 import orderservice.exception.OutOfStockException;
 import orderservice.repository.OrderRepository;
 import orderservice.service.order.response.OrderResponse;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,9 +30,7 @@ public class OrderServiceImpl implements OrderService {
     private final Snowflake snowflake;
     private final OrderRepository orderRepository;
     private final CatalogServiceClient catalogClient;
-
-    private static final int MAX_RETRY_COUNT = 3;
-    private static final long RETRY_DELAY_MS = 100;
+    private final CatalogServiceAdapter catalogServiceAdapter;
 
     @Override
     @Transactional
@@ -42,7 +39,8 @@ public class OrderServiceImpl implements OrderService {
                 .map(OrderItemDto::getProductId)
                 .toList();
 
-        List<CatalogResponse> catalogs = catalogClient.getProducts(productIds);
+        // Circuit Breaker로 보호된 상품 조회
+        List<CatalogResponse> catalogs = catalogServiceAdapter.getCatalogProducts(productIds);
         Map<String, CatalogResponse> catalogMap = catalogs.stream()
                 .collect(Collectors.toMap(CatalogResponse::getProductId, catalog -> catalog));
 
@@ -50,12 +48,15 @@ public class OrderServiceImpl implements OrderService {
         try {
             for (OrderItemDto itemDto : orderDto.getOrderItems()) {
                 CatalogResponse catalog = catalogMap.get(itemDto.getProductId());
-                decreaseStockWithRetry(catalog.getProductId(), itemDto.getQty());
+                // Circuit Breaker로 보호된 재고 차감
+                catalogServiceAdapter.decreaseCatalogStock(catalog.getProductId(), itemDto.getQty());
                 decreasedProductIds.add(catalog.getProductId());
             }
         } catch (OutOfStockException e) {
+            // 재고 부족은 재시도 없이 바로 던지기
             throw e;
         } catch (Exception e) {
+            // 기타 예외는 보상 트랜잭션 실행
             log.warn("재고 차감 실패, 보상 트랜잭션 실행");
             boolean rollbackSuccess = rollbackStockDecrease(orderDto, decreasedProductIds, catalogMap);
 
@@ -89,46 +90,6 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 낙관적 락 재시도 로직
-     */
-    private void decreaseStockWithRetry(String productId, Integer quantity) {
-        int retryCount = 0;
-        while (retryCount < MAX_RETRY_COUNT) {
-            try {
-                catalogClient.decreaseStock(productId, quantity);
-                return;
-            } catch (ResponseStatusException e) {
-                if (e.getStatusCode() == HttpStatus.CONFLICT) {
-                    // 재고 부족인 경우 - 재시도하지 않고 바로 던지기
-                    String reason = e.getReason();
-                    if (reason != null && reason.contains("재고")) {
-                        throw new OutOfStockException(reason);
-                    }
-
-                    // 낙관적 락 충돌인 경우 - 재시도
-                    if (retryCount < MAX_RETRY_COUNT - 1) {
-                        retryCount++;
-                        log.warn("재고 차감시 낙관적 락 충돌 발생, 재시도 {}/{}", retryCount, MAX_RETRY_COUNT);
-                        try {
-                            Thread.sleep(RETRY_DELAY_MS);
-                        } catch (InterruptedException ie) {
-                            Thread.currentThread().interrupt();
-                            throw new OrderCreationFailedException("재시도 중 인터럽트 발생");
-                        }
-                    } else {
-                        throw new OrderCreationFailedException("재고 차감 실패: 최대 재시도 횟수 초과");
-                    }
-                } else {
-                    throw new OrderCreationFailedException("재고 차감 실패: " + e.getMessage());
-                }
-            } catch (Exception e) {
-                log.error("예상치 못한 예외 발생 - productId: {}, type: {}, message: {}", productId, e.getClass().getName(), e.getMessage(), e);
-                throw new OrderCreationFailedException("재고 차감 실패: " + e.getMessage());
-            }
-        }
-    }
-
-    /**
      * 보상 트랜잭션: 재고 복구
      * @return 모든 재고 복구 성공 시 true, 하나라도 실패 시 false
      */
@@ -137,7 +98,6 @@ public class OrderServiceImpl implements OrderService {
 
         for (String productId : decreasedProductIds) {
             try {
-                // 복구할 수량 찾기
                 OrderItemDto itemDto = orderDto.getOrderItems().stream()
                         .filter(item -> item.getProductId().equals(productId))
                         .findFirst()
