@@ -2,7 +2,9 @@ package catalogservice.service.catalog;
 
 import catalogservice.dto.CatalogDto;
 import catalogservice.entity.Catalog;
+import catalogservice.entity.CategoryCatalogCount;
 import catalogservice.repository.CatalogRepository;
+import catalogservice.repository.CategoryCatalogCountRepository;
 import catalogservice.service.catalog.response.CatalogResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,7 @@ import java.util.stream.Collectors;
 public class CatalogServiceImpl implements CatalogService {
     private final Snowflake snowflake;
     private final CatalogRepository catalogRepository;
+    private final CategoryCatalogCountRepository categoryCatalogCountRepository;
 
     @Override
     @Transactional
@@ -36,6 +39,11 @@ public class CatalogServiceImpl implements CatalogService {
                 catalogDto.getCategoryId()
         );
         Catalog savedCatalog = catalogRepository.save(catalog);
+        int updated = categoryCatalogCountRepository.increase(catalogDto.getCategoryId());
+        if (updated == 0) {
+            categoryCatalogCountRepository.save(CategoryCatalogCount.init(catalogDto.getCategoryId(), 1L));
+        }
+
         return CatalogResponse.from(savedCatalog);
     }
 

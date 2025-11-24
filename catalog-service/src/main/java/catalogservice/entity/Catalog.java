@@ -4,25 +4,41 @@ import catalogservice.entity.base.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.PostPersist;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.springframework.data.domain.Persistable;
 
 @Table(name = "catalog")
 @Getter
 @Entity
 @ToString
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Catalog extends BaseEntity {
+public class Catalog extends BaseEntity implements Persistable<Long> {
 
     @Id
     private Long id;
 
+    @Transient
+    private boolean isNew = true;
+
     @Version
     private Long version;
+
+    @Override
+    public boolean isNew() {
+        return isNew;
+    }
+
+    @PostPersist
+    public void markNotNew() {
+        this.isNew = false;
+    }
 
     @Column(nullable = false, length = 120, unique = true)
     private String productId;
@@ -40,7 +56,7 @@ public class Catalog extends BaseEntity {
     public static Catalog create(Long id, String productId, String productName, Integer stock, Integer unitPrice, String userId, Long categoryId) {
         Catalog catalog = new Catalog();
         catalog.id = id;
-        catalog.version = 0L;
+        // version은 null로 두어야 JPA가 새 엔티티로 인식 (INSERT 시 자동으로 0 설정됨)
         catalog.productId = productId;
         catalog.productName = productName;
         catalog.stock = stock;

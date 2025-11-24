@@ -36,6 +36,9 @@ public class OrderItem extends BaseEntity {
     @Column(nullable = false)
     private Integer totalPrice;
 
+    @Column(nullable = false) // Shard Key (Order와 동일)
+    private Long userPk;
+
     public static OrderItem create(Long id, Order order, String productId, String productName, Integer qty, Integer unitPrice) {
         OrderItem orderItem = new OrderItem();
         orderItem.id = id;
@@ -45,6 +48,7 @@ public class OrderItem extends BaseEntity {
         orderItem.qty = qty;
         orderItem.unitPrice = unitPrice;
         orderItem.totalPrice = qty * unitPrice;
+        orderItem.userPk = order.getUserPk();
         return orderItem;
     }
 
