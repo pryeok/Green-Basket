@@ -32,7 +32,8 @@ public class CatalogServiceImpl implements CatalogService {
                 catalogDto.getProductName(),
                 catalogDto.getStock(),
                 catalogDto.getUnitPrice(),
-                catalogDto.getUserId()
+                catalogDto.getUserId(),
+                catalogDto.getCategoryId()
         );
         Catalog savedCatalog = catalogRepository.save(catalog);
         return CatalogResponse.from(savedCatalog);

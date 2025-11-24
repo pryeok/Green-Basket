@@ -76,6 +76,7 @@ dependencies {
     // Zipkin
     implementation 'io.micrometer:micrometer-tracing-bridge-brave'
     implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
+    implementation 'io.github.openfeign:feign-micrometer'
 
     // Development Tools
     developmentOnly 'org.springframework.boot:spring-boot-devtools'

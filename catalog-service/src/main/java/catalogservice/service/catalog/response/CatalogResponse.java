@@ -12,6 +12,7 @@ public class CatalogResponse {
     private Integer stock;
     private Integer unitPrice;
     private String userId;
+    private Long categoryId;
 
     public static CatalogResponse from(Catalog catalog) {
         CatalogResponse response = new CatalogResponse();
@@ -21,6 +22,7 @@ public class CatalogResponse {
         response.stock = catalog.getStock();
         response.unitPrice = catalog.getUnitPrice();
         response.userId = catalog.getUserId();
+        response.categoryId = catalog.getCategoryId();
         return response;
     }
 }

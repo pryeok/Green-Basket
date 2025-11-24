@@ -36,7 +36,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // 3. AccessToken & RefreshToken 생성
-        String accessToken = jwtUtil.generateAccessToken(user.getUserId(), "USER");
+        String accessToken = jwtUtil.generateAccessToken(user.getUserId(), "USER", user.getId());
         String refreshToken = jwtUtil.generateRefreshToken(user.getUserId());
 
         // 4. RefreshToken을 Redis에 저장
@@ -63,8 +63,12 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("RefreshToken이 일치하지 않습니다.");
         }
 
-        // 4. 새로운 AccessToken 생성
-        String newAccessToken = jwtUtil.generateAccessToken(userId, "USER");
+        // 4. 사용자 조회하여 userPk 획득
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        // 5. 새로운 AccessToken 생성
+        String newAccessToken = jwtUtil.generateAccessToken(userId, "USER", user.getId());
 
         log.info("AccessToken 재발급 성공: userId={}", userId);
 

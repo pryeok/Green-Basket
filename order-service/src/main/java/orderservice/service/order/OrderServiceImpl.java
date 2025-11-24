@@ -69,7 +69,8 @@ public class OrderServiceImpl implements OrderService {
         Order order = Order.create(
                 snowflake.nextId(),
                 IdGenerator.generateOrderId(),
-                orderDto.getUserId()
+                orderDto.getUserId(),
+                orderDto.getUserPk()
         );
 
         orderDto.getOrderItems().forEach(itemDto -> {

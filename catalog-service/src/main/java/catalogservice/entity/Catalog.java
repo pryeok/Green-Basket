@@ -34,8 +34,10 @@ public class Catalog extends BaseEntity {
     private Integer unitPrice;
     @Column(nullable = false)
     private String userId;
+    @Column(nullable = false) // Shard Key
+    private Long categoryId;
 
-    public static Catalog create(Long id, String productId, String productName, Integer stock, Integer unitPrice, String userId) {
+    public static Catalog create(Long id, String productId, String productName, Integer stock, Integer unitPrice, String userId, Long categoryId) {
         Catalog catalog = new Catalog();
         catalog.id = id;
         catalog.version = 0L;
@@ -44,6 +46,7 @@ public class Catalog extends BaseEntity {
         catalog.stock = stock;
         catalog.unitPrice = unitPrice;
         catalog.userId = userId;
+        catalog.categoryId = categoryId;
         return catalog;
     }
 

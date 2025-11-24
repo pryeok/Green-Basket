@@ -24,13 +24,14 @@ public class JwtUtil {
     }
 
     // Access Token 생성 (30분)
-    public String generateAccessToken(String userId, String role) {
+    public String generateAccessToken(String userId, String role, Long userPk) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + accessExpirationTime);
 
         return Jwts.builder()
                 .setSubject(userId)
                 .claim("role", role)
+                .claim("userPk", userPk)
                 .claim("type", TokenType.ACCESS.getValue())
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
@@ -62,6 +63,12 @@ public class JwtUtil {
     public String getRoleFromToken(String token) {
         Claims claims = parseClaims(token);
         return claims.get("role", String.class);
+    }
+
+    // 토큰에서 userPk 추출
+    public Long getUserPkFromToken(String token) {
+        Claims claims = parseClaims(token);
+        return claims.get("userPk", Long.class);
     }
 
     // 토큰 타입 확인 (access or refresh)

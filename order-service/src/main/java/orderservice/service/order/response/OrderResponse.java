@@ -11,6 +11,7 @@ public class OrderResponse {
     private Long id;
     private String orderId;
     private String userId;
+    private Long userPk;
     private Integer totalPrice;
     private List<OrderItemResponse> orderItems;
 
@@ -19,6 +20,7 @@ public class OrderResponse {
         response.id = order.getId();
         response.orderId = order.getOrderId();
         response.userId = order.getUserId();
+        response.userPk = order.getUserPk();
         response.totalPrice = order.getTotalPrice();
         response.orderItems = order.getOrderItems().stream()
                 .map(OrderItemResponse::from)

@@ -8,4 +8,5 @@ public class CatalogDto {
     private Integer stock;
     private Integer unitPrice;
     private String userId;
+    private Long categoryId;
 }

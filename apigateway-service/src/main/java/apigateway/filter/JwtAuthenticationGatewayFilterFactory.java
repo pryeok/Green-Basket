@@ -48,17 +48,19 @@ public class JwtAuthenticationGatewayFilterFactory extends AbstractGatewayFilter
                     return onError(exchange, "Invalid token", HttpStatus.UNAUTHORIZED);
                 }
 
-                // userId, role 추출
+                // userId, role, userPk 추출
                 String userId = jwtUtil.getUserIdFromToken(token);
                 String role = jwtUtil.getRoleFromToken(token);
+                Long userPk = jwtUtil.getUserPkFromToken(token);
 
                 // 내부 서비스로 전달할 Header 추가
                 ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
                         .header("X-User-Id", userId)
                         .header("X-User-Role", role)
+                        .header("X-User-Pk", String.valueOf(userPk))
                         .build();
 
-                log.info("JWT 검증 성공: userId={}, role={}", userId, role);
+                log.info("JWT 검증 성공: userId={}, role={}, userPk={}", userId, role, userPk);
 
                 return chain.filter(exchange.mutate().request(modifiedRequest).build());
 

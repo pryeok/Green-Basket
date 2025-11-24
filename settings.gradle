@@ -19,4 +19,8 @@ include 'common:exception'
 include 'order-service'
 include 'catalog-service'
 include 'config-service'
+include 'common:data-serializer'
+findProject(':common:data-serializer')?.name = 'data-serializer'
+include 'common:data-serializer'
+findProject(':common:data-serializer')?.name = 'data-serializer'
 

@@ -19,11 +19,13 @@ public class OrderController {
     @PostMapping("/orders")
     public OrderResponse createOrder(
             @RequestHeader("X-User-Id") String userId,
+            @RequestHeader("X-User-Pk") Long userPk,
             @RequestBody OrderCreateRequest orderCreateRequest) {
         ModelMapper mapper = new ModelMapper();
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
         OrderDto orderDto = mapper.map(orderCreateRequest, OrderDto.class);
         orderDto.setUserId(userId);
+        orderDto.setUserPk(userPk);
         return orderService.createOrder(orderDto);
     }
 
