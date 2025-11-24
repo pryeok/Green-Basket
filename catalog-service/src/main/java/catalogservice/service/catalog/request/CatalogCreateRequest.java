@@ -7,4 +7,5 @@ public class CatalogCreateRequest {
     private String productName;
     private Integer stock;
     private Integer unitPrice;
+    private Long categoryId;
 }
