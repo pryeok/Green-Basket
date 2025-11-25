@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.springframework.data.domain.Persistable;
 import orderservice.entity.base.BaseEntity;
 
 @Table(name = "order_items")
@@ -12,10 +13,23 @@ import orderservice.entity.base.BaseEntity;
 @Entity
 @ToString(exclude = "order")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class OrderItem extends BaseEntity {
+public class OrderItem extends BaseEntity implements Persistable<Long> {
 
     @Id
     private Long id;
+
+    @Transient
+    private boolean isNew = true;
+
+    @Override
+    public boolean isNew() {
+        return isNew;
+    }
+
+    @PostPersist
+    public void markNotNew() {
+        this.isNew = false;
+    }
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)

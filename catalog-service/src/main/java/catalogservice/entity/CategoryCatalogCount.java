@@ -24,14 +24,4 @@ public class CategoryCatalogCount {
         categoryCatalogCount.catalogCount = catalogCount;
         return categoryCatalogCount;
     }
-
-    public void increase() {
-        this.catalogCount++;
-    }
-
-    public void decrease() {
-        if (this.catalogCount > 0) {
-            this.catalogCount--;
-        }
-    }
 }

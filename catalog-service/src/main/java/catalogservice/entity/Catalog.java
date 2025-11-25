@@ -26,19 +26,8 @@ public class Catalog extends BaseEntity implements Persistable<Long> {
 
     @Transient
     private boolean isNew = true;
-
     @Version
     private Long version;
-
-    @Override
-    public boolean isNew() {
-        return isNew;
-    }
-
-    @PostPersist
-    public void markNotNew() {
-        this.isNew = false;
-    }
 
     @Column(nullable = false, length = 120, unique = true)
     private String productId;
@@ -53,10 +42,18 @@ public class Catalog extends BaseEntity implements Persistable<Long> {
     @Column(nullable = false) // Shard Key
     private Long categoryId;
 
+    @Override
+    public boolean isNew() {
+        return isNew;
+    }
+    @PostPersist
+    public void markNotNew() {
+        this.isNew = false;
+    }
+
     public static Catalog create(Long id, String productId, String productName, Integer stock, Integer unitPrice, String userId, Long categoryId) {
         Catalog catalog = new Catalog();
         catalog.id = id;
-        // version은 null로 두어야 JPA가 새 엔티티로 인식 (INSERT 시 자동으로 0 설정됨)
         catalog.productId = productId;
         catalog.productName = productName;
         catalog.stock = stock;

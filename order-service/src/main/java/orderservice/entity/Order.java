@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.springframework.data.domain.Persistable;
 import orderservice.entity.base.BaseEntity;
 
 import java.util.ArrayList;
@@ -15,10 +16,23 @@ import java.util.List;
 @Entity
 @ToString(exclude = "orderItems")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Order extends BaseEntity {
+public class Order extends BaseEntity implements Persistable<Long> {
 
     @Id
     private Long id;
+
+    @Transient
+    private boolean isNew = true;
+
+    @Override
+    public boolean isNew() {
+        return isNew;
+    }
+
+    @PostPersist
+    public void markNotNew() {
+        this.isNew = false;
+    }
 
     @Column(nullable = false, unique = true)
     private String orderId;

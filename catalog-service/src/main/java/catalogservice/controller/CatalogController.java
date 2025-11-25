@@ -3,6 +3,7 @@ package catalogservice.controller;
 import catalogservice.dto.CatalogDto;
 import catalogservice.service.catalog.CatalogService;
 import catalogservice.service.catalog.request.CatalogCreateRequest;
+import catalogservice.service.catalog.response.CatalogPageResponse;
 import catalogservice.service.catalog.response.CatalogResponse;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -35,6 +36,14 @@ public class CatalogController {
     @GetMapping("/catalogs")
     public List<CatalogResponse> getAllCatalogs() {
         return catalogService.getAllCatalogs();
+    }
+
+    @GetMapping("/catalogs/category")
+    public CatalogPageResponse readAll(
+            @RequestParam(value = "categoryId") Long categoryId,
+            @RequestParam(value = "page", defaultValue = "1") Long page,
+            @RequestParam(value = "pageSize", defaultValue = "20") Long pageSize) {
+        return catalogService.readAll(categoryId, page, pageSize);
     }
 
     @PostMapping("/catalogs/batch")

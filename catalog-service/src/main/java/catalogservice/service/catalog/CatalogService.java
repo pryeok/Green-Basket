@@ -1,6 +1,7 @@
 package catalogservice.service.catalog;
 
 import catalogservice.dto.CatalogDto;
+import catalogservice.service.catalog.response.CatalogPageResponse;
 import catalogservice.service.catalog.response.CatalogResponse;
 
 import java.util.List;
@@ -14,6 +15,8 @@ public interface CatalogService {
     List<CatalogResponse> getAllCatalogs();
 
     List<CatalogResponse> getCatalogsByProductIds(List<String> productIds);
+
+    CatalogPageResponse readAll(Long categoryId, Long page, Long pageSize);
 
     // 재고 차감
     void decreaseStock(String productId, Integer quantity);

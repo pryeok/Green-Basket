@@ -5,6 +5,7 @@ import catalogservice.entity.Catalog;
 import catalogservice.entity.CategoryCatalogCount;
 import catalogservice.repository.CatalogRepository;
 import catalogservice.repository.CategoryCatalogCountRepository;
+import catalogservice.service.catalog.response.CatalogPageResponse;
 import catalogservice.service.catalog.response.CatalogResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -49,17 +50,17 @@ public class CatalogServiceImpl implements CatalogService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<CatalogResponse> getCatalogsByUserId(String userId) {
-        List<Catalog> catalogs = catalogRepository.findByUserId(userId);
-        return catalogs.stream()
+    public List<CatalogResponse> getAllCatalogs() {
+        return catalogRepository.findAll().stream()
                 .map(CatalogResponse::from)
                 .toList();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<CatalogResponse> getAllCatalogs() {
-        return catalogRepository.findAll().stream()
+    public List<CatalogResponse> getCatalogsByUserId(String userId) {
+        List<Catalog> catalogs = catalogRepository.findByUserId(userId);
+        return catalogs.stream()
                 .map(CatalogResponse::from)
                 .toList();
     }
@@ -89,6 +90,20 @@ public class CatalogServiceImpl implements CatalogService {
         return catalogs.stream()
                 .map(CatalogResponse::from)
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CatalogPageResponse readAll(Long categoryId, Long page, Long pageSize) {
+        return CatalogPageResponse.of(
+                catalogRepository.findAll(categoryId, (page - 1) * pageSize, pageSize).stream()
+                        .map(CatalogResponse::from)
+                        .toList(),
+                catalogRepository.countByCategoryId(
+                        categoryId,
+                        PageLimitCalculator.calculatePageLimit(page, pageSize, 10L)
+                )
+        );
     }
 
     @Override

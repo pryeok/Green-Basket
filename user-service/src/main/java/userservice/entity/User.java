@@ -3,11 +3,14 @@ package userservice.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.PostPersist;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.springframework.data.domain.Persistable;
 import userservice.entity.base.BaseEntity;
 
 @Table(name = "users")
@@ -15,10 +18,23 @@ import userservice.entity.base.BaseEntity;
 @Entity
 @ToString
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class User extends BaseEntity {
+public class User extends BaseEntity implements Persistable<Long> {
 
     @Id
     private Long id;
+
+    @Transient
+    private boolean isNew = true;
+
+    @Override
+    public boolean isNew() {
+        return isNew;
+    }
+
+    @PostPersist
+    public void markNotNew() {
+        this.isNew = false;
+    }
 
     @Column(nullable = false, length = 50, unique = true)
     private String email;
