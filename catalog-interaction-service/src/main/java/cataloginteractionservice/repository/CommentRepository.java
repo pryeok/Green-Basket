@@ -26,8 +26,8 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     );
 
     @Query(
-            value = "select comment.comment_id, comment.content, comment.parent_comment_id, comment.article_id, " +
-                    "comment.writer_id, comment.deleted, comment.created_at " +
+            value = "select comment.comment_id, comment.content, comment.parent_comment_id, comment.catalog_id, " +
+                    "comment.user_id, comment.deleted, comment.created_at, comment.updated_at " +
                     "from (" +
                     "   select comment_id from comment where catalog_id = :catalogId " +
                     "   order by parent_comment_id asc, comment_id asc " +
@@ -36,7 +36,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             nativeQuery = true
     )
     List<Comment> findAll(
-            @Param("articleId") Long catalogId,
+            @Param("catalogId") Long catalogId,
             @Param("offset") Long offset,
             @Param("limit") Long limit
     );
@@ -48,7 +48,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             nativeQuery = true
     )
     Long count(
-            @Param("articleId") Long catalogId,
+            @Param("catalogId") Long catalogId,
             @Param("limit") Long limit
     );
 }
