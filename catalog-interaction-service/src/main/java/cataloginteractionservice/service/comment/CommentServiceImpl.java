@@ -2,8 +2,7 @@ package cataloginteractionservice.service.comment;
 
 import cataloginteractionservice.dto.comment.CommentDto;
 import cataloginteractionservice.entity.Comment;
-import cataloginteractionservice.repository.CommentRepository;
-import cataloginteractionservice.service.comment.request.CommentCreateRequest;
+import cataloginteractionservice.repository.comment.CommentRepository;
 import cataloginteractionservice.service.comment.response.CommentPageResponse;
 import cataloginteractionservice.service.comment.response.CommentResponse;
 import com.greenbasket.common.snowflake.Snowflake;

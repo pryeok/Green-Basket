@@ -63,6 +63,18 @@ public class Catalog extends BaseEntity implements Persistable<Long> {
         return catalog;
     }
 
+    public void update(String productName, Integer stock, Integer unitPrice) {
+        if (productName != null) {
+            this.productName = productName;
+        }
+        if (stock != null) {
+            this.stock = stock;
+        }
+        if (unitPrice != null) {
+            this.unitPrice = unitPrice;
+        }
+    }
+
     // 재고 차감
     public void decreaseStock(Integer quantity) {
         this.stock -= quantity;

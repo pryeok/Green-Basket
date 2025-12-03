@@ -28,6 +28,22 @@ public class CatalogController {
         return catalogService.createCatalog(catalogDto);
     }
 
+    @PutMapping("/catalogs/{productId}")
+    public CatalogResponse updateCatalog(
+            @PathVariable("productId") String productId,
+            @RequestBody CatalogCreateRequest catalogCreateRequest
+    ) {
+        ModelMapper mapper = new ModelMapper();
+        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+        CatalogDto catalogDto = mapper.map(catalogCreateRequest, CatalogDto.class);
+        return catalogService.updateCatalog(productId, catalogDto);
+    }
+
+    @DeleteMapping("/catalogs/{productId}")
+    public void deleteCatalog(@PathVariable("productId") String productId) {
+        catalogService.deleteCatalog(productId);
+    }
+
     @GetMapping("/catalogs/users/{userId}")
     public List<CatalogResponse> getCatalogsByUserId(@PathVariable("userId") String userId) {
         return catalogService.getCatalogsByUserId(userId);

@@ -1,4 +1,4 @@
-package cataloginteractionservice.controller;
+package cataloginteractionservice.controller.comment;
 
 import cataloginteractionservice.dto.comment.CommentDto;
 import cataloginteractionservice.service.comment.CommentService;

@@ -29,6 +29,13 @@ public class OrderController {
         return orderService.createOrder(orderDto);
     }
 
+    @DeleteMapping("/orders/{orderId}")
+    public void delete(
+            @PathVariable("orderId") String orderId,
+            @RequestHeader("X-User-Id") String userId) {
+        orderService.delete(orderId);
+    }
+
     @GetMapping("/orders")
     public List<OrderResponse> getOrders(@RequestHeader("X-User-Id") String userId) {
         return orderService.getOrdersByUserId(userId);

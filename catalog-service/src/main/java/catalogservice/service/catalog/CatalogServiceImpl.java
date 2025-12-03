@@ -7,6 +7,10 @@ import catalogservice.repository.CatalogRepository;
 import catalogservice.repository.CategoryCatalogCountRepository;
 import catalogservice.service.catalog.response.CatalogPageResponse;
 import catalogservice.service.catalog.response.CatalogResponse;
+import com.greenbasket.common.event.EventType;
+import com.greenbasket.common.event.payload.CatalogCreatedEventPayload;
+import com.greenbasket.common.event.payload.CatalogDeletedEventPayload;
+import com.greenbasket.common.outboxmessagerelay.OutboxEventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +28,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CatalogServiceImpl implements CatalogService {
     private final Snowflake snowflake;
+    private final OutboxEventPublisher outboxEventPublisher;
     private final CatalogRepository catalogRepository;
     private final CategoryCatalogCountRepository categoryCatalogCountRepository;
 
@@ -45,7 +50,65 @@ public class CatalogServiceImpl implements CatalogService {
             categoryCatalogCountRepository.save(CategoryCatalogCount.init(catalogDto.getCategoryId(), 1L));
         }
 
+        outboxEventPublisher.publish(
+                EventType.CATALOG_CREATED,
+                CatalogCreatedEventPayload.builder()
+                        .id(savedCatalog.getId())
+                        .productId(savedCatalog.getProductId())
+                        .productName(savedCatalog.getProductName())
+                        .stock(savedCatalog.getStock())
+                        .unitPrice(savedCatalog.getUnitPrice())
+                        .userId(savedCatalog.getUserId())
+                        .categoryId(savedCatalog.getCategoryId())
+                        .createdAt(savedCatalog.getCreatedAt())
+                        .updatedAt(savedCatalog.getUpdatedAt())
+                        .build(),
+                savedCatalog.getCategoryId()
+        );
+
         return CatalogResponse.from(savedCatalog);
+    }
+
+    @Override
+    @Transactional
+    public CatalogResponse updateCatalog(String productId, CatalogDto catalogDto) {
+        Catalog catalog = catalogRepository.findByProductId(productId)
+                .orElseThrow(() -> new ProductNotFoundException(List.of(productId)));
+
+        catalog.update(
+                catalogDto.getProductName(),
+                catalogDto.getStock(),
+                catalogDto.getUnitPrice()
+        );
+
+        return CatalogResponse.from(catalog);
+    }
+
+    @Override
+    @Transactional
+    public void deleteCatalog(String productId) {
+        Catalog catalog = catalogRepository.findByProductId(productId)
+                .orElseThrow(() -> new ProductNotFoundException(List.of(productId)));
+
+        outboxEventPublisher.publish(
+                EventType.CATALOG_DELETED,
+                CatalogDeletedEventPayload.builder()
+                        .id(catalog.getId())
+                        .productId(catalog.getProductId())
+                        .productName(catalog.getProductName())
+                        .stock(catalog.getStock())
+                        .unitPrice(catalog.getUnitPrice())
+                        .userId(catalog.getUserId())
+                        .categoryId(catalog.getCategoryId())
+                        .createdAt(catalog.getCreatedAt())
+                        .updatedAt(catalog.getUpdatedAt())
+                        .build(),
+                catalog.getCategoryId()  // shardKey
+        );
+
+        categoryCatalogCountRepository.decrease(catalog.getCategoryId());
+
+        catalogRepository.delete(catalog);
     }
 
     @Override

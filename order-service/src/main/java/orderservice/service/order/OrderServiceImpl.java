@@ -1,6 +1,10 @@
 package orderservice.service.order;
 
+import com.greenbasket.common.event.EventType;
+import com.greenbasket.common.event.payload.OrderCreatedEventPayload;
+import com.greenbasket.common.event.payload.OrderDeletedEventPayload;
 import com.greenbasket.common.idgenerator.IdGenerator;
+import com.greenbasket.common.outboxmessagerelay.OutboxEventPublisher;
 import com.greenbasket.common.snowflake.Snowflake;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +32,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
     private final Snowflake snowflake;
+    private final OutboxEventPublisher outboxEventPublisher;
     private final OrderRepository orderRepository;
     private final CatalogServiceClient catalogClient;
     private final CatalogServiceAdapter catalogServiceAdapter;
@@ -78,6 +83,7 @@ public class OrderServiceImpl implements OrderService {
             OrderItem orderItem = OrderItem.create(
                     snowflake.nextId(),
                     order,
+                    catalog.getId(),        // catalogId
                     catalog.getProductId(),
                     catalog.getProductName(),
                     itemDto.getQty(),
@@ -87,8 +93,74 @@ public class OrderServiceImpl implements OrderService {
         });
 
         Order savedOrder = orderRepository.save(order);
+
+        outboxEventPublisher.publish(
+                EventType.ORDER_CREATED,
+                OrderCreatedEventPayload.builder()
+                        .id(savedOrder.getId())
+                        .orderId(savedOrder.getOrderId())
+                        .userId(savedOrder.getUserId())
+                        .totalPrice(savedOrder.getTotalPrice())
+                        .userPk(savedOrder.getUserPk())
+                        .createdAt(savedOrder.getCreatedAt())
+                        .updatedAt(savedOrder.getUpdatedAt())
+                        .orderItems(
+                                savedOrder.getOrderItems().stream()
+                                        .map(item -> OrderCreatedEventPayload.OrderItemPayload.from(
+                                                item.getCatalogId(),
+                                                item.getProductId(),
+                                                item.getProductName(),
+                                                item.getQty(),
+                                                item.getUnitPrice(),
+                                                item.getTotalPrice()
+                                        ))
+                                        .toList()
+                        )
+                        .build(),
+                savedOrder.getUserPk()
+        );
         return OrderResponse.from(savedOrder);
     }
+
+
+    @Override
+    @Transactional
+    public void delete(String orderId) {
+        // 1. orderId로 Order 조회 (orderItems 포함)
+        Order order = orderRepository.findByOrderId(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다. orderId: " + orderId));
+
+        // 2. 삭제 이벤트 발행 (실제 삭제 전에 발행)
+        outboxEventPublisher.publish(
+                EventType.ORDER_DELETED,
+                OrderDeletedEventPayload.builder()
+                        .id(order.getId())
+                        .orderId(order.getOrderId())
+                        .userId(order.getUserId())
+                        .totalPrice(order.getTotalPrice())
+                        .userPk(order.getUserPk())
+                        .createdAt(order.getCreatedAt())
+                        .updatedAt(order.getUpdatedAt())
+                        .orderItems(
+                                order.getOrderItems().stream()
+                                        .map(item -> OrderDeletedEventPayload.OrderItemPayload.from(
+                                                item.getCatalogId(),
+                                                item.getProductId(),
+                                                item.getProductName(),
+                                                item.getQty(),
+                                                item.getUnitPrice(),
+                                                item.getTotalPrice()
+                                        ))
+                                        .toList()
+                        )
+                        .build(),
+                order.getUserPk()  // shardKey
+        );
+
+        orderRepository.delete(order);
+        log.info("주문 삭제 완료: orderId={}, id={}", orderId, order.getId());
+    }
+
 
     /**
      * 보상 트랜잭션: 재고 복구

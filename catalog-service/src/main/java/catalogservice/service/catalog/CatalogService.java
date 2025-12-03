@@ -10,6 +10,10 @@ public interface CatalogService {
 
     CatalogResponse createCatalog(CatalogDto catalogDto);
 
+    CatalogResponse updateCatalog(String productId, CatalogDto catalogDto);
+
+    void deleteCatalog(String productId);
+
     List<CatalogResponse> getCatalogsByUserId(String userId);
 
     List<CatalogResponse> getAllCatalogs();

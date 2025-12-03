@@ -28,6 +28,8 @@ dependencies {
     implementation project(':common:snowflake')
     implementation project(':common:id-generator')
     implementation project(':common:exception')
+    implementation project(':common:outbox-message-relay')
+    implementation project(':common:event')
 
     // Spring Boot Web
     implementation 'org.springframework.boot:spring-boot-starter-web'

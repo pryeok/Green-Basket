@@ -1,4 +1,4 @@
-package cataloginteractionservice.repository;
+package cataloginteractionservice.repository.comment;
 
 import cataloginteractionservice.entity.Comment;
 import org.springframework.data.jpa.repository.JpaRepository;

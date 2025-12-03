@@ -35,6 +35,9 @@ public class OrderItem extends BaseEntity implements Persistable<Long> {
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
+    @Column(nullable = false)
+    private Long catalogId;
+
     @Column(nullable = false, length = 120)
     private String productId;
 
@@ -53,10 +56,11 @@ public class OrderItem extends BaseEntity implements Persistable<Long> {
     @Column(nullable = false) // Shard Key (Order와 동일)
     private Long userPk;
 
-    public static OrderItem create(Long id, Order order, String productId, String productName, Integer qty, Integer unitPrice) {
+    public static OrderItem create(Long id, Order order, Long catalogId, String productId, String productName, Integer qty, Integer unitPrice) {
         OrderItem orderItem = new OrderItem();
         orderItem.id = id;
         orderItem.order = order;
+        orderItem.catalogId = catalogId;
         orderItem.productId = productId;
         orderItem.productName = productName;
         orderItem.qty = qty;

@@ -9,5 +9,7 @@ public interface OrderService {
 
     OrderResponse createOrder(OrderDto orderDto);
 
+    void delete(String orderId);
+
     List<OrderResponse> getOrdersByUserId(String userId);
 }
