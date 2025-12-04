@@ -1,0 +1,79 @@
+Green Basket - MSA E-commerce Architecture Diagram Prompt
+================================================================
+
+Create a comprehensive microservice architecture diagram for an e-commerce platform called "Green Basket".
+
+INFRASTRUCTURE LAYER:
+- Eureka Server (Service Discovery)
+- Spring Cloud Config Server (Centralized Configuration)
+- API Gateway (Entry point for all requests)
+- Spring Cloud Bus + RabbitMQ (Configuration refresh)
+
+MICROSERVICES:
+1. User Service
+   - User authentication & management
+   - MySQL database
+   - Feign client for inter-service communication
+
+2. Order Service
+   - Order creation, retrieval, cancellation
+   - MySQL database
+   - Publishes order events via Outbox Pattern
+   - Feign client connections
+
+3. Catalog Service
+   - Product catalog management
+   - 2-depth category structure
+   - Page numbering
+   - MySQL database
+   - Feign client connections
+
+4. Catalog Interaction Service (CORE FEATURE)
+   - Like functionality with distributed lock
+   - View count with Redis Cluster
+   - Comment system
+   - Shard-based message distribution (4 shards)
+   - MySQL database with Outbox table
+   - Message Relay component
+
+DATA LAYER:
+- MySQL (one per service)
+- Redis Cluster (for view counts, caching)
+- Outbox tables (for transactional messaging)
+
+MESSAGE INFRASTRUCTURE:
+- Kafka (event streaming)
+- RabbitMQ (Spring Cloud Bus + async tasks)
+- Message Relay with Shard-based Distribution
+  - 4 shards (0, 1, 2, 3)
+  - Redis-based instance coordination
+  - Heartbeat mechanism
+
+MONITORING & TRACING:
+- Zipkin (distributed tracing)
+
+KEY FEATURES TO HIGHLIGHT:
+1. Service Discovery (Eureka)
+2. Centralized Config (Config Server + Spring Cloud Bus)
+3. Outbox Pattern for message reliability
+4. Shard-based message distribution (catalogId % 4)
+5. Redis Cluster for high-performance caching
+6. Distributed Lock for Like functionality
+7. Hot Catalog tracking via Kafka events
+8. Encryption for sensitive data
+9. Global exception handling
+
+CONNECTIONS:
+- Client → API Gateway → Services
+- Services ↔ Eureka (registration & discovery)
+- Services ← Config Server (configuration)
+- Services → Kafka (event publishing via Outbox)
+- Services ↔ Redis Cluster (caching)
+- Services ↔ Feign Client (inter-service calls)
+- Catalog Interaction → Message Relay → Kafka (with sharding)
+
+Show the data flow for:
+1. User request → API Gateway → Service → Database
+2. Order creation → Outbox table → Kafka → Consumer services
+3. Catalog view → Redis Cluster check → Cache hit/miss
+4. Like action → Distributed Lock → Database update

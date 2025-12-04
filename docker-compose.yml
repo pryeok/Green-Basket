@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  kafka:
+    image: apache/kafka:3.8.0
+    container_name: greenbasket_kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+    networks:
+      - greenbasket
+
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: greenbasket_zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - greenbasket
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: greenbaket_rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: greenbasket
+      RABBITMQ_DEFAULT_PASS: greenbasket
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - greenbasket
+
+  mysql:
+    image: mysql:8.0
+    container_name: greenbasket-mysql
+    command: --default-authentication-plugin=mysql_native_password
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: greenbasket
+      MYSQL_DATABASE: greenbasket
+      MYSQL_USER: greenbasket
+      MYSQL_PASSWORD: greenbasket
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - greenbasket
+
+  redis:
+    image: redis:7-alpine
+    container_name: greenbasket_redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    networks:
+      - greenbasket
+
+networks:
+  greenbasket:
+    driver: bridge
+
+volumes:
+  mysql-data:
+  rabbitmq-data:
+  redis-data:
