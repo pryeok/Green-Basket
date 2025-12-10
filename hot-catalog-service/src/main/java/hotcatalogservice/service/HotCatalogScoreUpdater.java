@@ -5,7 +5,7 @@ import com.greenbasket.common.event.EventPayload;
 import hotcatalogservice.repository.CatalogCreatedTimeRepository;
 import hotcatalogservice.repository.HotCatalogListRepository;
 import hotcatalogservice.repository.NewHotCatalogListRepository;
-import hotcatalogservice.service.eventhandler.EventHandler;
+import hotcatalogservice.service.event.handler.EventHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

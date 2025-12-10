@@ -6,4 +6,6 @@ public interface LikeService {
     void likePessimisticLock(LikeDto likeDto);
 
     void unlikePessimisticLock(LikeDto likeDto);
+
+    Long count(Long catalogId);
 }

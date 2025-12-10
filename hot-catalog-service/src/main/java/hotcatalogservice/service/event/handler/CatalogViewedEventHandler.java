@@ -1,4 +1,4 @@
-package hotcatalogservice.service.eventhandler;
+package hotcatalogservice.service.event.handler;
 
 import com.greenbasket.common.event.Event;
 import com.greenbasket.common.event.EventType;

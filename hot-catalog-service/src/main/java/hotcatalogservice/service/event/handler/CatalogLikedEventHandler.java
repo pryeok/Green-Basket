@@ -1,22 +1,21 @@
-package hotcatalogservice.service.eventhandler;
+package hotcatalogservice.service.event.handler;
 
 import com.greenbasket.common.event.Event;
 import com.greenbasket.common.event.EventType;
-import com.greenbasket.common.event.payload.CatalogUnlikedEventPayload;
+import com.greenbasket.common.event.payload.CatalogLikedEventPayload;
 import hotcatalogservice.repository.CatalogLikeCountRepository;
-import hotcatalogservice.repository.HotCatalogListRepository;
 import hotcatalogservice.util.TimeCalculatorUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class CatalogUnlikedEventHandler implements EventHandler<CatalogUnlikedEventPayload> {
+public class CatalogLikedEventHandler implements EventHandler<CatalogLikedEventPayload> {
     private final CatalogLikeCountRepository catalogLikeCountRepository;
 
     @Override
-    public void handle(Event<CatalogUnlikedEventPayload> event) {
-        CatalogUnlikedEventPayload payload = event.getPayload();
+    public void handle(Event<CatalogLikedEventPayload> event) {
+        CatalogLikedEventPayload payload = event.getPayload();
         catalogLikeCountRepository.createOrUpdate(
                 payload.getCatalogId(),
                 payload.getLikeCount(),
@@ -25,12 +24,12 @@ public class CatalogUnlikedEventHandler implements EventHandler<CatalogUnlikedEv
     }
 
     @Override
-    public boolean supports(Event<CatalogUnlikedEventPayload> event) {
-        return EventType.CATALOG_UNLIKED == event.getType();
+    public boolean supports(Event<CatalogLikedEventPayload> event) {
+        return EventType.CATALOG_LIKED == event.getType();
     }
 
     @Override
-    public Long findCatalogId(Event<CatalogUnlikedEventPayload> event) {
+    public Long findCatalogId(Event<CatalogLikedEventPayload> event) {
         return event.getPayload().getCatalogId();
     }
 }

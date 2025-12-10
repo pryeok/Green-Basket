@@ -53,4 +53,21 @@ public class CatalogServiceAdapter {
     public void decreaseCatalogStockFallback(String productId, Integer quantity, Exception e) {
         fallbackHandler.decreaseCatalogStockFallback(productId, quantity, e);
     }
+
+    /**
+     * Circuit Breaker + Retry로 보호된 재고 증가 (주문 취소/삭제 시 재고 복구)
+     */
+    @CircuitBreaker(name = "catalog-order", fallbackMethod = "increaseCatalogStockFallback")
+    @Retry(name = "catalog-order")
+    public void increaseCatalogStock(String productId, Integer quantity) {
+        log.debug("재고 복구 시도: productId={}, quantity={}", productId, quantity);
+        catalogClient.increaseStock(productId, quantity);
+    }
+
+    /**
+     * Fallback 위임 to CatalogServiceFallbackHandler
+     */
+    public void increaseCatalogStockFallback(String productId, Integer quantity, Exception e) {
+        fallbackHandler.increaseCatalogStockFallback(productId, quantity, e);
+    }
 }

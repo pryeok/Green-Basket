@@ -29,4 +29,5 @@ include 'common:event'
 findProject(':common:event')?.name = 'event'
 include 'common:outbox-message-relay'
 findProject(':common:outbox-message-relay')?.name = 'outbox-message-relay'
+include 'catalog-read-service'
 

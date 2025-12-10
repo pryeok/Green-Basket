@@ -3,6 +3,7 @@ package orderservice.client;
 import lombok.extern.slf4j.Slf4j;
 import orderservice.client.response.CatalogResponse;
 import orderservice.exception.OrderCreationFailedException;
+import orderservice.exception.OrderDeletionFailedException;
 import orderservice.exception.OutOfStockException;
 import org.springframework.stereotype.Component;
 
@@ -45,6 +46,19 @@ public class CatalogServiceFallbackHandler {
 
         throw new OrderCreationFailedException(
             "일시적으로 주문을 처리할 수 없습니다. 잠시 후 다시 시도해주세요."
+        );
+    }
+
+    /**
+     * 재고 증가 실패 Fallback (주문 삭제/취소 시)
+     */
+    public void increaseCatalogStockFallback(String productId, Integer quantity, Exception e) {
+        // 인프라 장애는 일시적 오류로 처리
+        log.error("[FALLBACK] 재고 복구 실패 - productId: {}, quantity: {}, 원인: {}",
+                  productId, quantity, e.getMessage());
+
+        throw new OrderDeletionFailedException(
+            "주문 삭제 실패: 재고 복구 중 일시적 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
         );
     }
 }

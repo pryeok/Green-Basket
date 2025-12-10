@@ -3,7 +3,7 @@ package hotcatalogservice.service;
 import com.greenbasket.common.event.Event;
 import com.greenbasket.common.event.EventPayload;
 import com.greenbasket.common.event.EventType;
-import hotcatalogservice.service.eventhandler.EventHandler;
+import hotcatalogservice.service.event.handler.EventHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

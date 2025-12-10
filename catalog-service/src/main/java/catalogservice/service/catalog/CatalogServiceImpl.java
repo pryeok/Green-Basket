@@ -111,6 +111,12 @@ public class CatalogServiceImpl implements CatalogService {
         catalogRepository.delete(catalog);
     }
 
+    public CatalogResponse getCatalog(String productId) {
+        Catalog catalog = catalogRepository.findByProductId(productId)
+                .orElseThrow(() -> new ProductNotFoundException(List.of(productId)));
+        return CatalogResponse.from(catalog);
+    }
+
     @Override
     @Transactional(readOnly = true)
     public List<CatalogResponse> getAllCatalogs() {

@@ -31,8 +31,7 @@ public class CatalogController {
     @PutMapping("/catalogs/{productId}")
     public CatalogResponse updateCatalog(
             @PathVariable("productId") String productId,
-            @RequestBody CatalogCreateRequest catalogCreateRequest
-    ) {
+            @RequestBody CatalogCreateRequest catalogCreateRequest) {
         ModelMapper mapper = new ModelMapper();
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
         CatalogDto catalogDto = mapper.map(catalogCreateRequest, CatalogDto.class);
@@ -42,6 +41,12 @@ public class CatalogController {
     @DeleteMapping("/catalogs/{productId}")
     public void deleteCatalog(@PathVariable("productId") String productId) {
         catalogService.deleteCatalog(productId);
+    }
+
+    @GetMapping("/catalogs/{productId}")
+    public CatalogResponse getCatalog(
+            @PathVariable("productId") String productId) {
+        return catalogService.getCatalog(productId);
     }
 
     @GetMapping("/catalogs/users/{userId}")
@@ -80,4 +85,5 @@ public class CatalogController {
             @RequestParam("quantity") Integer quantity) {
         catalogService.increaseStock(productId, quantity);
     }
+
 }

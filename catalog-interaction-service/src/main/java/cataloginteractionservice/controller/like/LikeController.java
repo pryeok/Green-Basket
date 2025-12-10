@@ -31,4 +31,11 @@ public class LikeController {
         likeDto.setUserId(userId);
         likeService.unlikePessimisticLock(likeDto);
     }
+
+    @GetMapping("/catalogs/{catalogId}/likes/count")
+    public Long count(
+            @PathVariable("catalogId") Long catalogId
+    ) {
+        return likeService.count(catalogId);
+    }
 }

@@ -14,6 +14,8 @@ public interface CatalogService {
 
     void deleteCatalog(String productId);
 
+    CatalogResponse getCatalog(String productId);
+
     List<CatalogResponse> getCatalogsByUserId(String userId);
 
     List<CatalogResponse> getAllCatalogs();

@@ -16,6 +16,7 @@ import orderservice.dto.OrderItemDto;
 import orderservice.entity.Order;
 import orderservice.entity.OrderItem;
 import orderservice.exception.OrderCreationFailedException;
+import orderservice.exception.OrderDeletionFailedException;
 import orderservice.exception.OutOfStockException;
 import orderservice.repository.OrderRepository;
 import orderservice.service.order.response.OrderResponse;
@@ -130,7 +131,35 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findByOrderId(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다. orderId: " + orderId));
 
-        // 2. 삭제 이벤트 발행 (실제 삭제 전에 발행)
+        // 2. 재고 복구 (동기적 처리)
+        List<String> restoredProductIds = new ArrayList<>();
+        try {
+            for (OrderItem item : order.getOrderItems()) {
+                catalogServiceAdapter.increaseCatalogStock(item.getProductId(), item.getQty());
+                restoredProductIds.add(item.getProductId());
+                log.info("재고 복구 완료: productId={}, qty={}", item.getProductId(), item.getQty());
+            }
+        } catch (Exception e) {
+            log.error("재고 복구 실패, 롤백 시도: restoredCount={}", restoredProductIds.size(), e);
+
+            // 이미 복구한 재고 다시 차감 (보상 트랜잭션)
+            for (String productId : restoredProductIds) {
+                try {
+                    OrderItem item = order.getOrderItems().stream()
+                            .filter(i -> i.getProductId().equals(productId))
+                            .findFirst()
+                            .orElseThrow();
+                    catalogServiceAdapter.decreaseCatalogStock(productId, item.getQty());
+                    log.info("재고 롤백 완료: productId={}", productId);
+                } catch (Exception rollbackException) {
+                    log.error("재고 롤백 실패: productId={}, 수동 확인 필요!", productId, rollbackException);
+                }
+            }
+
+            throw new OrderDeletionFailedException("재고 복구 실패로 주문 삭제 불가: " + e.getMessage());
+        }
+
+        // 3. 삭제 이벤트 발행
         outboxEventPublisher.publish(
                 EventType.ORDER_DELETED,
                 OrderDeletedEventPayload.builder()
@@ -157,6 +186,7 @@ public class OrderServiceImpl implements OrderService {
                 order.getUserPk()  // shardKey
         );
 
+        // 4. Order 삭제
         orderRepository.delete(order);
         log.info("주문 삭제 완료: orderId={}, id={}", orderId, order.getId());
     }
