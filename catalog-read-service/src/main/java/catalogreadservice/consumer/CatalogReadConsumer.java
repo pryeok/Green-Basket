@@ -29,7 +29,6 @@ public class CatalogReadConsumer {
         Event<EventPayload> event = Event.fromJson(message);
         if (event != null) {
             catalogReadService.handleEvent(event);
-        }
         ack.acknowledge();
     }
 
